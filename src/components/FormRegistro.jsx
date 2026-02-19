@@ -54,6 +54,7 @@ const getApiErrorMessage = (error) => {
     data?.descripcion,
     data?.descripcionError,
     data?.msg,
+    data?.mensaje,
   ].filter(Boolean);
 
   if (candidates.length) return candidates[0];
@@ -255,7 +256,9 @@ function FormRegistro() {
 
             <input
               type="hidden"
-              {...register("boleto", { setValueAs: (v) => (v === "" ? "" : v) })}
+              {...register("boleto", {
+                setValueAs: (v) => (v === "" ? "" : v),
+              })}
             />
 
             <Box>
@@ -289,7 +292,11 @@ function FormRegistro() {
                     <Chip
                       label={`#${boletoVisual}`}
                       color="success"
-                      sx={{ fontWeight: 700, bgcolor: "#ecfdf3", color: "#166534" }}
+                      sx={{
+                        fontWeight: 700,
+                        bgcolor: "#ecfdf3",
+                        color: "#166534",
+                      }}
                     />
                   </Stack>
                 ) : (
@@ -298,7 +305,12 @@ function FormRegistro() {
               </Button>
 
               {errors.boleto && (
-                <Typography variant="caption" color="error" display="block" mt={0.5}>
+                <Typography
+                  variant="caption"
+                  color="error"
+                  display="block"
+                  mt={0.5}
+                >
                   {errors.boleto.message}
                 </Typography>
               )}
