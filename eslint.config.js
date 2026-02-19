@@ -4,6 +4,7 @@ import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import importPlugin from "eslint-plugin-import";
+import unusedImports from "eslint-plugin-unused-imports";
 // eslint-disable-next-line import/no-unresolved
 import { defineConfig } from "eslint/config";
 
@@ -27,6 +28,7 @@ export default defineConfig([
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
       import: importPlugin,
+      "unused-imports": unusedImports,
     },
 
     rules: {
@@ -34,13 +36,27 @@ export default defineConfig([
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
 
-      // ✅ Detecta imports faltantes
+      // 🚨 Detecta imports que no existen
       "import/no-unresolved": "error",
+
+      // ⚠️ Detecta imports no usados (warning)
+      "unused-imports/no-unused-imports": "warn",
+
+      // ⚠️ Variables no usadas (pero ignora las que empiezan con _)
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
 
       // React moderno
       "react/react-in-jsx-scope": "off",
 
-      // Si quieres quitar warnings de props
+      // Quita prop-types si usas TS o no las quieres
       "react/prop-types": "off",
     },
 
@@ -49,7 +65,6 @@ export default defineConfig([
         version: "detect",
       },
 
-      // 🔥 Esto ayuda a resolver módulos en Vite
       "import/resolver": {
         node: {
           extensions: [".js", ".jsx"],

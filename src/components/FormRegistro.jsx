@@ -1,73 +1,53 @@
+import { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-
-// MUI
-import {
-  TextField,
-  Button,
-  InputAdornment,
-  Box,
-  Typography,
-} from "@mui/material";
-
-// Icons
-import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
-import InstagramIcon from "@mui/icons-material/Instagram";
 import { useForm } from "react-hook-form";
 
-/* ===============================
-   Validaciones (Schema)
-================================*/
+import { TextField, Button, Box, Typography } from "@mui/material";
+
+import ModalBoletos from "./ModalBoletos";
+import { registrarParticipante } from "../services/boletosService";
+
 const schema = yup.object().shape({
   nombre: yup.string().required("El nombre es obligatorio"),
-
-  celular: yup
-    .string()
-    .matches(/^[0-9]{10}$/, "Debe tener 10 dígitos")
-    .required("El celular es obligatorio"),
-
   instagram: yup
     .string()
     .matches(/^@[\w.]+$/, "Debe iniciar con @")
     .required("Instagram es obligatorio"),
+  boleto: yup.number().required("Debes seleccionar un boleto"),
 });
 
-/* ===============================
-   Componente
-================================*/
 function FormRegistro() {
+  const [modalOpen, setModalOpen] = useState(false);
+
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm({
     resolver: yupResolver(schema),
   });
 
-  /* ===============================
-     Submit
-  ================================*/
+  const boletoSeleccionado = watch("boleto");
+
   const onSubmit = async (data) => {
-    console.log("Datos:", data);
-
-    // Aquí luego mandamos a Supabase / API
+    await registrarParticipante(data);
     alert("Registro exitoso 🎉");
-
     reset();
   };
 
   return (
     <Box
-      component="section"
       sx={{
         background: "#fff",
         padding: 4,
-        borderRadius: 3,
-        maxWidth: 450,
+        borderRadius: 4,
+        maxWidth: 500,
         mx: "auto",
-        boxShadow: 2,
+        boxShadow: 4,
       }}
     >
       <Typography variant="h5" mb={3} textAlign="center" fontWeight="bold">
@@ -75,7 +55,6 @@ function FormRegistro() {
       </Typography>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Nombre */}
         <TextField
           fullWidth
           label="Nombre completo"
@@ -83,34 +62,8 @@ function FormRegistro() {
           {...register("nombre")}
           error={!!errors.nombre}
           helperText={errors.nombre?.message}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <PersonIcon />
-              </InputAdornment>
-            ),
-          }}
         />
 
-        {/* Celular */}
-        <TextField
-          fullWidth
-          label="Celular"
-          margin="normal"
-          type="tel"
-          {...register("celular")}
-          error={!!errors.celular}
-          helperText={errors.celular?.message}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <PhoneIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* Instagram */}
         <TextField
           fullWidth
           label="Instagram"
@@ -119,40 +72,56 @@ function FormRegistro() {
           {...register("instagram")}
           error={!!errors.instagram}
           helperText={errors.instagram?.message}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <InstagramIcon />
-              </InputAdornment>
-            ),
-          }}
         />
 
-        {/* Botón */}
+        <Box mt={2}>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => setModalOpen(true)}
+            sx={{
+              py: 1.5,
+              borderRadius: 3,
+              fontWeight: "bold",
+            }}
+          >
+            {boletoSeleccionado
+              ? `Boleto seleccionado: ${boletoSeleccionado}`
+              : "Elegir número"}
+          </Button>
+          {errors.boleto && (
+            <Typography variant="caption" color="error">
+              {errors.boleto.message}
+            </Typography>
+          )}
+        </Box>
+
         <Button
           type="submit"
           variant="contained"
           fullWidth
           size="large"
+          sx={{
+            mt: 3,
+            py: 1.5,
+            fontWeight: "bold",
+            borderRadius: 3,
+            backgroundColor: "#10b981",
+            "&:hover": {
+              backgroundColor: "#059669",
+            },
+          }}
           disabled={isSubmitting}
-          className="
-            mt-6
-            !rounded-xl
-            !py-3
-            !text-lg
-            !font-semibold
-            !bg-emerald-600
-            hover:!bg-emerald-700
-            active:scale-95
-            transition-all
-            duration-200
-            shadow-lg
-            disabled:opacity-60
-          "
         >
           {isSubmitting ? "Enviando..." : "Participar"}
         </Button>
       </form>
+
+      <ModalBoletos
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSelect={(numero) => setValue("boleto", numero)}
+      />
     </Box>
   );
 }
