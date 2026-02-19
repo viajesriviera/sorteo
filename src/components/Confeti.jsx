@@ -4,18 +4,18 @@ import { useWindowSize } from "react-use"; // para que se adapte al tamaño de l
 
 function FiestaConfeti({ trigger }) {
   const { width, height } = useWindowSize();
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(true);
 
   const segundos = 1000;
   const milisegundos = segundos * 1000;
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (trigger) {
       setShow(true);
       const timer = setTimeout(() => setShow(false), milisegundos);
       return () => clearTimeout(timer);
     }
-  }, [trigger]);
+  }, [trigger]);*/
 
   return show ? (
     <div className="fixed inset-0 z-0 pointer-events-none">
