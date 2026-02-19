@@ -7,7 +7,7 @@ function Footer() {
     <Box component="footer" className="footer">
       <div className="footer-content">
         <Typography variant="body2" className="footer-text">
-          © 2026 Sorteo Xcaret. Todos los derechos reservados.
+          © 2026 Sorteo Viajes Riviera México. Todos los derechos reservados.
         </Typography>
 
         <Typography variant="body2" className="footer-links">

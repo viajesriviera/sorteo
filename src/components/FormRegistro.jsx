@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
-
 import { TextField, Button, Box, Typography } from "@mui/material";
 
 import ModalBoletos from "./ModalBoletos";
 import { registrarParticipante } from "../services/boletosService";
+import BoletoConfirmado from "./BoletoConfirmado";
 
 const schema = yup.object().shape({
   nombre: yup.string().required("El nombre es obligatorio"),
@@ -19,6 +19,7 @@ const schema = yup.object().shape({
 
 function FormRegistro() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [boletoGuardado, setBoletoGuardado] = useState(null);
 
   const {
     register,
@@ -26,18 +27,50 @@ function FormRegistro() {
     setValue,
     watch,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm({
     resolver: yupResolver(schema),
   });
 
   const boletoSeleccionado = watch("boleto");
 
+  // 🔥 Leer localStorage al montar
+  useEffect(() => {
+    const boletoLS = localStorage.getItem("boletoRifa");
+    if (boletoLS) {
+      setBoletoGuardado(boletoLS);
+    }
+  }, []);
+
   const onSubmit = async (data) => {
     await registrarParticipante(data);
-    alert("Registro exitoso 🎉");
-    reset();
+
+    // Guardar en localStorage
+    localStorage.setItem("boletoRifa", data.boleto);
+
+    setBoletoGuardado(data.boleto);
   };
+
+  // 🔥 Si ya tiene boleto → mostrar vista confirmación
+  if (boletoGuardado) {
+    return (
+      <>
+        <BoletoConfirmado boleto={boletoGuardado} />
+
+        {import.meta.env.DEV && (
+          <Button
+            variant="outlined"
+            sx={{ mt: 2 }}
+            onClick={() => {
+              localStorage.removeItem("boletoRifa");
+              window.location.reload();
+            }}
+          >
+            🧹 Reset (DEV)
+          </Button>
+        )}
+      </>
+    );
+  }
 
   return (
     <Box
@@ -79,16 +112,13 @@ function FormRegistro() {
             variant="outlined"
             fullWidth
             onClick={() => setModalOpen(true)}
-            sx={{
-              py: 1.5,
-              borderRadius: 3,
-              fontWeight: "bold",
-            }}
+            sx={{ py: 1.5, borderRadius: 3, fontWeight: "bold" }}
           >
             {boletoSeleccionado
               ? `Boleto seleccionado: ${boletoSeleccionado}`
               : "Elegir número"}
           </Button>
+
           {errors.boleto && (
             <Typography variant="caption" color="error">
               {errors.boleto.message}
@@ -107,9 +137,7 @@ function FormRegistro() {
             fontWeight: "bold",
             borderRadius: 3,
             backgroundColor: "#10b981",
-            "&:hover": {
-              backgroundColor: "#059669",
-            },
+            "&:hover": { backgroundColor: "#059669" },
           }}
           disabled={isSubmitting}
         >
