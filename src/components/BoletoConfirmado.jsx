@@ -5,8 +5,8 @@ import rivieraLogo from "../assets/logo.png";
 const formatBoleto = (value) => {
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return "00000";
-  // Máximo 100,000 boletos → 6 dígitos. Se rellena con ceros a la izquierda.
-  return String(Math.max(0, numeric)).padStart(5, "0").slice(-6);
+  // Máximo 99,999 boletos → 5 dígitos. Se rellena con ceros a la izquierda.
+  return String(Math.min(Math.max(0, numeric), 99999)).padStart(5, "0");
 };
 
 function BoletoConfirmado({ boleto }) {

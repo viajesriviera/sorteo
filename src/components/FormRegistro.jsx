@@ -11,6 +11,8 @@ import {
   InputAdornment,
   Chip,
   Divider,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -31,9 +33,23 @@ const schema = yup.object().shape({
   boleto: yup.number().required("Debes seleccionar un boleto"),
 });
 
+const formatNumero = (valor) => {
+  if (valor === null || valor === undefined || valor === "") return "";
+  const num = Number(valor);
+  if (Number.isNaN(num) || num < 0) return "";
+  // Hasta 99999 => 5 dígitos con ceros a la izquierda
+  const capped = Math.min(num, 99999);
+  return String(capped).padStart(5, "0");
+};
+
 function FormRegistro() {
   const [modalOpen, setModalOpen] = useState(false);
   const [boletoGuardado, setBoletoGuardado] = useState(null);
+  const [feedback, setFeedback] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const {
     register,
@@ -48,6 +64,7 @@ function FormRegistro() {
   });
 
   const boletoSeleccionado = useWatch({ control, name: "boleto" });
+  const boletoVisual = formatNumero(boletoSeleccionado);
 
   // Leer localStorage al montar
   useEffect(() => {
@@ -68,11 +85,29 @@ function FormRegistro() {
 
   const onSubmit = async (data) => {
     const payload = { ...data, boleto: Number(data.boleto) };
-    await registrarParticipante(payload);
+    try {
+      await registrarParticipante(payload);
+      setFeedback({
+        open: true,
+        message: "Registro enviado con éxito. ¡Mucha suerte!",
+        severity: "success",
+      });
 
-    // Guardar en localStorage
-    localStorage.setItem("boletoRifa", payload.boleto);
-    setBoletoGuardado(payload.boleto);
+      // Guardar en localStorage
+      localStorage.setItem("boletoRifa", payload.boleto);
+      setBoletoGuardado(payload.boleto);
+    } catch (error) {
+      const apiMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Ocurrió un error al registrar tu boleto. Intenta nuevamente.";
+      setFeedback({
+        open: true,
+        message: apiMessage,
+        severity: "error",
+      });
+      console.error("Error al registrar participante:", error);
+    }
   };
 
   // Si ya tiene boleto -> mostrar vista de confirmación
@@ -224,7 +259,7 @@ function FormRegistro() {
                   },
                 }}
               >
-                {boletoSeleccionado ? (
+                {boletoVisual ? (
                   <Stack
                     direction="row"
                     spacing={1}
@@ -235,7 +270,7 @@ function FormRegistro() {
                       Boleto seleccionado
                     </Typography>
                     <Chip
-                      label={`#${boletoSeleccionado}`}
+                      label={`#${boletoVisual}`}
                       color="success"
                       sx={{ fontWeight: 700, bgcolor: "#ecfdf3", color: "#166534" }}
                     />
@@ -302,6 +337,26 @@ function FormRegistro() {
         onClose={() => setModalOpen(false)}
         onSelect={handleSelectNumero}
       />
+
+      <Snackbar
+        open={feedback.open}
+        autoHideDuration={5000}
+        onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setFeedback((prev) => ({ ...prev, open: false }))}
+          severity={feedback.severity}
+          variant="filled"
+          sx={{
+            borderRadius: 3,
+            boxShadow: "0 12px 30px rgba(15,23,42,0.25)",
+            minWidth: 320,
+          }}
+        >
+          {feedback.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
