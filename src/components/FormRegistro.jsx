@@ -65,6 +65,7 @@ const getApiErrorMessage = (error) => {
 function FormRegistro() {
   const [modalOpen, setModalOpen] = useState(false);
   const [boletoGuardado, setBoletoGuardado] = useState(null);
+  const [nombreGuardado, setNombreGuardado] = useState(null);
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -91,7 +92,9 @@ function FormRegistro() {
     const boletoLS = localStorage.getItem("boletoRifa");
     if (boletoLS !== null) {
       const parsed = Number(boletoLS);
+
       setBoletoGuardado(Number.isNaN(parsed) ? boletoLS : parsed);
+      setNombreGuardado(localStorage.getItem("nombreRifa") || "");
     }
   }, []);
 
@@ -116,7 +119,10 @@ function FormRegistro() {
 
       // Guardar en localStorage
       localStorage.setItem("boletoRifa", payload.boleto);
+      localStorage.setItem("nombreRifa", payload.nombre);
+
       setBoletoGuardado(payload.boleto);
+      setNombreGuardado(payload.nombre);
     } catch (error) {
       const apiMessage = getApiErrorMessage(error);
       setFeedback({
@@ -132,7 +138,10 @@ function FormRegistro() {
   if (boletoGuardado !== null && boletoGuardado !== undefined) {
     return (
       <>
-        <BoletoConfirmado boleto={boletoGuardado} />
+        <BoletoConfirmado
+          numero={formatNumero(boletoGuardado)}
+          nombre={nombreGuardado}
+        />
 
         {import.meta.env.DEV && (
           <Button
