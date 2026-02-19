@@ -42,6 +42,25 @@ const formatNumero = (valor) => {
   return String(capped).padStart(5, "0");
 };
 
+const getApiErrorMessage = (error) => {
+  const data = error?.response?.data;
+  const status = error?.response?.status;
+  const statusText = error?.response?.statusText;
+
+  const candidates = [
+    data?.message,
+    data?.error,
+    data?.detail,
+    data?.descripcion,
+    data?.descripcionError,
+    data?.msg,
+  ].filter(Boolean);
+
+  if (candidates.length) return candidates[0];
+  if (status) return `Error ${status}${statusText ? ` - ${statusText}` : ""}`;
+  return error?.message || "Ocurrió un error al registrar tu boleto.";
+};
+
 function FormRegistro() {
   const [modalOpen, setModalOpen] = useState(false);
   const [boletoGuardado, setBoletoGuardado] = useState(null);
@@ -69,8 +88,9 @@ function FormRegistro() {
   // Leer localStorage al montar
   useEffect(() => {
     const boletoLS = localStorage.getItem("boletoRifa");
-    if (boletoLS) {
-      setBoletoGuardado(boletoLS);
+    if (boletoLS !== null) {
+      const parsed = Number(boletoLS);
+      setBoletoGuardado(Number.isNaN(parsed) ? boletoLS : parsed);
     }
   }, []);
 
@@ -97,10 +117,7 @@ function FormRegistro() {
       localStorage.setItem("boletoRifa", payload.boleto);
       setBoletoGuardado(payload.boleto);
     } catch (error) {
-      const apiMessage =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        "Ocurrió un error al registrar tu boleto. Intenta nuevamente.";
+      const apiMessage = getApiErrorMessage(error);
       setFeedback({
         open: true,
         message: apiMessage,
@@ -111,7 +128,7 @@ function FormRegistro() {
   };
 
   // Si ya tiene boleto -> mostrar vista de confirmación
-  if (boletoGuardado) {
+  if (boletoGuardado !== null && boletoGuardado !== undefined) {
     return (
       <>
         <BoletoConfirmado boleto={boletoGuardado} />

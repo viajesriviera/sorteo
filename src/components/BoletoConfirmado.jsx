@@ -166,9 +166,9 @@ function BoletoConfirmado({ boleto }) {
       ctx.font = '700 22px "Segoe UI", "Plus Jakarta Sans", Arial';
       const infoValueY = cardY + cardH - 30;
       ctx.textAlign = "left";
-      ctx.fillText("15 de julio, 2026", cardX + 32, infoValueY);
+      ctx.fillText("------", cardX + 32, infoValueY);
       ctx.textAlign = "right";
-      ctx.fillText("www.viajesriviera.com", cardX + cardW - 32, infoValueY);
+      ctx.fillText("viajesrivieramexico.com", cardX + cardW - 32, infoValueY);
 
       // Leyenda
       ctx.textAlign = "center";
