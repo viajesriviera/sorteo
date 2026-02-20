@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, Link } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import "../styles/footer.css";
 
 function Footer() {
@@ -11,11 +12,15 @@ function Footer() {
         </Typography>
 
         <Typography variant="body2" className="footer-links">
-          <Link href="#" underline="none">
+          <Link component={RouterLink} to="/terminos" underline="none">
             Términos y Condiciones
           </Link>
           <span className="separator">•</span>
-          <Link href="#" underline="none">
+          <Link
+            component={RouterLink}
+            to="/aviso-privacidad"
+            underline="none"
+          >
             Aviso de Privacidad
           </Link>
         </Typography>

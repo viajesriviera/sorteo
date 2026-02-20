@@ -37,6 +37,10 @@ function Header() {
           ¡Vamos a regalar un viaje para 2 adultos y 2 menores al Hotel Xcaret
           México!
         </Typography>
+
+        <Typography variant="div" component="p" className="drawDate">
+          El sorteo se realizará con la Lotería Nacional el 6 de marzo de 2026.
+        </Typography>
       </div>
     </Box>
   );
