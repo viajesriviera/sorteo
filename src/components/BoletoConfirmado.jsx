@@ -3,7 +3,7 @@ import { Box, Button } from "@mui/material";
 import { useRef, useEffect, useState } from "react";
 import fondoBoleto from "../assets/fondo-vertical.jpeg"; // tu imagen vertical
 
-function BoletoConfirmado({ numero, nombre }) {
+function BoletoConfirmado({ numero, nombre, folio }) {
   const canvasRef = useRef(null);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -15,38 +15,62 @@ function BoletoConfirmado({ numero, nombre }) {
 
     const img = new Image();
     img.src = fondoBoleto;
+
     img.onload = () => {
       setImageLoaded(true);
 
-      // Dimensiones más pequeñas
-      const maxWidth = 400; // ancho máximo del boleto
+      const maxWidth = 400;
       const scale = maxWidth / img.width;
       const width = img.width * scale;
       const height = img.height * scale;
 
       canvas.width = width;
       canvas.height = height;
-      ctx.clearRect(0, 0, width, height);
 
-      // Dibujar la imagen centrada
+      ctx.clearRect(0, 0, width, height);
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Espacio para los textos en la parte inferior
       const paddingBottom = 50;
 
-      // Texto blanco
-      ctx.fillStyle = "#ffffff";
-      ctx.font = `600 32px Arial`;
+      // =========================
+      // 🔴 TEXTO ROJO ROTADO
+      // =========================
+      ctx.save(); // guardar estado
+
+      // mover el origen a la esquina derecha
+      ctx.translate(width - 20, height / 2);
+
+      // rotar -90 grados
+      ctx.rotate(Math.PI / 2);
+
+      ctx.fillStyle = "#FF0000";
+      ctx.font = "600 20px Arial";
       ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      ctx.fillText(folio, -250, 2);
+
+      ctx.restore(); // restaurar estado
+
+      // =========================
+      // ⚪ TEXTO BLANCO NORMAL
+      // =========================
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "600 32px Arial";
+      ctx.textAlign = "center";
+
       ctx.fillText(
         nombre.split(" ").slice(0, 2).join(" ").toUpperCase(),
         width / 2,
         height - paddingBottom - 70,
       );
 
-      // Texto con color y prefijo "No."
+      // =========================
+      // 🔵 TEXTO N° NORMAL
+      // =========================
       ctx.fillStyle = "#043153";
-      ctx.font = `900 28px Arial`;
+      ctx.font = "900 28px Arial";
+
       ctx.fillText(
         `N° ${numero}`.toUpperCase(),
         width / 2,
@@ -54,7 +78,6 @@ function BoletoConfirmado({ numero, nombre }) {
       );
     };
   }, [numero]);
-
   const descargarImagen = () => {
     if (!canvasRef.current || !imageLoaded) return;
     const link = document.createElement("a");

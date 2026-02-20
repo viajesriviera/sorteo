@@ -66,6 +66,7 @@ function FormRegistro() {
   const [modalOpen, setModalOpen] = useState(false);
   const [boletoGuardado, setBoletoGuardado] = useState(null);
   const [nombreGuardado, setNombreGuardado] = useState(null);
+  const [folioGuardado, setFolioGuardado] = useState(null);
   const [feedback, setFeedback] = useState({
     open: false,
     message: "",
@@ -95,6 +96,7 @@ function FormRegistro() {
 
       setBoletoGuardado(Number.isNaN(parsed) ? boletoLS : parsed);
       setNombreGuardado(localStorage.getItem("nombreRifa") || "");
+      setFolioGuardado(localStorage.getItem("SVRM") || "");
     }
   }, []);
 
@@ -110,7 +112,8 @@ function FormRegistro() {
   const onSubmit = async (data) => {
     const payload = { ...data, boleto: Number(data.boleto) };
     try {
-      await registrarParticipante(payload);
+      const response = await registrarParticipante(payload);
+
       setFeedback({
         open: true,
         message: "Registro enviado con éxito. ¡Mucha suerte!",
@@ -119,7 +122,8 @@ function FormRegistro() {
 
       // Guardar en localStorage
       localStorage.setItem("boletoRifa", payload.boleto);
-      localStorage.setItem("nombreRifa", payload.nombre);
+      localStorage.setItem("nombreRifa", response.data.nombre);
+      localStorage.setItem("SVRM", response.data.vrfol);
 
       setBoletoGuardado(payload.boleto);
       setNombreGuardado(payload.nombre);
@@ -141,6 +145,7 @@ function FormRegistro() {
         <BoletoConfirmado
           numero={formatNumero(boletoGuardado)}
           nombre={nombreGuardado}
+          folio={folioGuardado}
         />
 
         {import.meta.env.DEV && (
