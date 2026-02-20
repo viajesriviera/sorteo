@@ -127,6 +127,7 @@ function FormRegistro() {
 
       setBoletoGuardado(payload.boleto);
       setNombreGuardado(payload.nombre);
+      setFolioGuardado(response.data.vrfol);
     } catch (error) {
       const apiMessage = getApiErrorMessage(error);
       setFeedback({
