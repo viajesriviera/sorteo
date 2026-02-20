@@ -77,7 +77,7 @@ function BoletoConfirmado({ numero, nombre, folio }) {
         height - paddingBottom,
       );
     };
-  }, [numero]);
+  }, [numero, nombre, folio]);
   const descargarImagen = () => {
     if (!canvasRef.current || !imageLoaded) return;
     const link = document.createElement("a");
