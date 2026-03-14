@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm, useWatch } from "react-hook-form";
 import {
-  TextField,
-  Button,
+  Alert,
   Box,
-  Typography,
-  Stack,
-  InputAdornment,
+  Button,
   Chip,
   Divider,
+  InputAdornment,
   Snackbar,
-  Alert,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -23,6 +23,9 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import ModalBoletos from "./ModalBoletos";
 import { registrarParticipante } from "../services/boletosService";
 import BoletoConfirmado from "./BoletoConfirmado";
+import SorteoCerrado from "./SorteoCerrado";
+
+const SORTEO_CERRADO = true;
 
 const schema = yup.object().shape({
   nombre: yup.string().required("El nombre es obligatorio"),
@@ -35,9 +38,10 @@ const schema = yup.object().shape({
 
 const formatNumero = (valor) => {
   if (valor === null || valor === undefined || valor === "") return "";
+
   const num = Number(valor);
   if (Number.isNaN(num) || num < 0) return "";
-  // Hasta 99999 => 5 dígitos con ceros a la izquierda
+
   const capped = Math.min(num, 99999);
   return String(capped).padStart(5, "0");
 };
@@ -59,7 +63,7 @@ const getApiErrorMessage = (error) => {
 
   if (candidates.length) return candidates[0];
   if (status) return `Error ${status}${statusText ? ` - ${statusText}` : ""}`;
-  return error?.message || "Ocurrió un error al registrar tu boleto.";
+  return error?.message || "Ocurrio un error al registrar tu boleto.";
 };
 
 function FormRegistro() {
@@ -88,16 +92,14 @@ function FormRegistro() {
   const boletoSeleccionado = useWatch({ control, name: "boleto" });
   const boletoVisual = formatNumero(boletoSeleccionado);
 
-  // Leer localStorage al montar
   useEffect(() => {
     const boletoLS = localStorage.getItem("boletoRifa");
-    if (boletoLS !== null) {
-      const parsed = Number(boletoLS);
+    if (boletoLS === null) return;
 
-      setBoletoGuardado(Number.isNaN(parsed) ? boletoLS : parsed);
-      setNombreGuardado(localStorage.getItem("nombreRifa") || "");
-      setFolioGuardado(localStorage.getItem("SVRM") || "");
-    }
+    const parsed = Number(boletoLS);
+    setBoletoGuardado(Number.isNaN(parsed) ? boletoLS : parsed);
+    setNombreGuardado(localStorage.getItem("nombreRifa") || "");
+    setFolioGuardado(localStorage.getItem("SVRM") || "");
   }, []);
 
   const handleSelectNumero = (numero) => {
@@ -111,16 +113,16 @@ function FormRegistro() {
 
   const onSubmit = async (data) => {
     const payload = { ...data, boleto: Number(data.boleto) };
+
     try {
       const response = await registrarParticipante(payload);
 
       setFeedback({
         open: true,
-        message: "Registro enviado con éxito. ¡Mucha suerte!",
+        message: "Registro enviado con exito. Mucha suerte.",
         severity: "success",
       });
 
-      // Guardar en localStorage
       localStorage.setItem("boletoRifa", payload.boleto);
       localStorage.setItem("nombreRifa", response.data.nombre);
       localStorage.setItem("SVRM", response.data.vrfol);
@@ -129,17 +131,19 @@ function FormRegistro() {
       setNombreGuardado(payload.nombre);
       setFolioGuardado(response.data.vrfol);
     } catch (error) {
-      const apiMessage = getApiErrorMessage(error);
       setFeedback({
         open: true,
-        message: apiMessage,
+        message: getApiErrorMessage(error),
         severity: "error",
       });
       console.error("Error al registrar participante:", error);
     }
   };
 
-  // Si ya tiene boleto -> mostrar vista de confirmación
+  if (SORTEO_CERRADO) {
+    return <SorteoCerrado />;
+  }
+
   if (boletoGuardado !== null && boletoGuardado !== undefined) {
     return (
       <>
@@ -213,7 +217,7 @@ function FormRegistro() {
             />
             <Chip
               size="small"
-              label="Cupón único por persona"
+              label="Cupon unico por persona"
               sx={{ bgcolor: "rgba(34,197,94,0.12)", fontWeight: 600 }}
             />
           </Stack>
@@ -225,10 +229,10 @@ function FormRegistro() {
             mb={1}
             sx={{ letterSpacing: "-0.5px" }}
           >
-            ¡Regístrate y elige tu boleto ganador!
+            Registrate y elige tu boleto ganador
           </Typography>
           <Typography variant="body1" color="text.secondary" mb={3}>
-            Completa tus datos y escoge tu número favorito para participar en el
+            Completa tus datos y escoge tu numero favorito para participar en el
             sorteo exclusivo de VIAJES RIVIERA.
           </Typography>
 
@@ -240,7 +244,7 @@ function FormRegistro() {
             <TextField
               fullWidth
               label="Nombre completo"
-              placeholder="Ej. María López"
+              placeholder="Ej. Maria Lopez"
               {...register("nombre")}
               error={!!errors.nombre}
               helperText={errors.nombre?.message}
@@ -301,9 +305,7 @@ function FormRegistro() {
                     alignItems="center"
                     sx={{ width: "100%", justifyContent: "space-between" }}
                   >
-                    <Typography fontWeight={700}>
-                      Boleto seleccionado
-                    </Typography>
+                    <Typography fontWeight={700}>Boleto seleccionado</Typography>
                     <Chip
                       label={`#${boletoVisual}`}
                       color="success"
@@ -315,7 +317,7 @@ function FormRegistro() {
                     />
                   </Stack>
                 ) : (
-                  "Elegir número"
+                  "Elegir numero"
                 )}
               </Button>
 
@@ -347,7 +349,7 @@ function FormRegistro() {
               }}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Enviando..." : "Confirmar participación"}
+              {isSubmitting ? "Enviando..." : "Confirmar participacion"}
             </Button>
           </Stack>
 
@@ -369,7 +371,7 @@ function FormRegistro() {
             <Stack direction="row" spacing={1} alignItems="center">
               <ConfirmationNumberOutlinedIcon sx={{ color: "#22c55e" }} />
               <Typography variant="body2" color="text.secondary">
-                Cupos limitados, asegura tu número hoy
+                Cupos limitados, asegura tu numero hoy
               </Typography>
             </Stack>
           </Stack>
